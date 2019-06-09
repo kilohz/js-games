@@ -1,8 +1,8 @@
-import Paddle from '/scripts/paddle.js';
-import InputHandler from '/scripts/input.js';
-import Ball from "/scripts/ball.js";
-import Brick from "/scripts/brick.js";
-import { buildLevel, level1,level2 } from "/scripts/levels.js";
+import Paddle from './paddle.js';
+import InputHandler from './input.js';
+import Ball from "./ball.js";
+import Brick from "./brick.js";
+import { buildLevel, level1,level2 } from "./levels.js";
 
 const GAMESTATE = {
     PAUSED: 0,
