@@ -1,5 +1,6 @@
 import Tetrimino from './tetrimino.js';
 import InputHandler from './input.js';
+import Stage from './stage.js';
 
 const GAMESTATE = {
     PAUSED: 0,
@@ -16,8 +17,9 @@ export default class Game {
         this.gameHeight = gameHeight;
         this.gameObjects = [];
         this.gamestate = GAMESTATE.MENU;
-        this.lives = 3;
+        this.lives = 1;
         this.score = 0;
+        this.speed = 10;
 
         new InputHandler(this);
     }
@@ -76,8 +78,10 @@ export default class Game {
         if (this.gamestate != GAMESTATE.MENU && this.gamestate != GAMESTATE.NEWLEVEL) return;
 
         let tetrimino = new Tetrimino(this);
-        this.gameObjects = [tetrimino];
+        let stage = new Stage(this);
+        this.gameObjects = [tetrimino,stage];
         this.liveBlock = tetrimino;
+        this.stage = stage;
 
         this.gamestate = GAMESTATE.RUNNING;
     }

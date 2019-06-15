@@ -9,18 +9,6 @@ export function detectCollision(obj1, obj2) {
     let rightObj2 = obj2.pos.x + obj2.width;
     let bottomObj2 = obj2.pos.y + obj2.height;
 
-    // if (
-    //     bottomObj1 >= topObj2 &&
-    //     topObj1 <= bottomObj2 &&
-    //     obj.pos.x >= leftObj2 &&
-    //     obj.pos.x + obj.size <= rightObj2
-    // ) {
-    //     return true;
-    // } else {
-    //     return false;
-    // }
-
-
     if((bottomObj1>topObj2 && rightObj1 >leftObj2 
         && bottomObj1 < bottomObj2 && rightObj1 < rightObj2)
         ||( topObj2 > bottomObj1 && leftObj2 >rightObj1 

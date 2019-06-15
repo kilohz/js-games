@@ -11,26 +11,43 @@ export default class Tetrimino {
         this.game = game;
         this.shapes = [new Ishape(), new Jshape(), new Lshape(), new Oshape(), new Sshape(), new Tshape(), new Zshape()];
         this.startPos = { x: 400, y: 160 };
-        this.speed = 1;
-        this.movePercent=0;
-
+        this.movePercent = 0;
+        this.WallRightX = 500;
+        this.wallLeftX = 300;
 
         //randomize 
-        let randomIndex = Math.floor(Math.random() * 7);
+        let randomIndex = Math.floor(Math.random() * this.shapes.length);
         this.shape = this.shapes[randomIndex];
         this.blocks = this.shape.blocks;
     }
 
     moveLeft() {
-        this.startPos.x -= 20;
+        this.startPos.x -= this.size;
+        if (!this.checkConstraints()) {
+            //revert
+            this.startPos.x += this.size;
+        }
     }
 
     moveRight() {
-        this.startPos.x += 20;
+        this.startPos.x += this.size;
+        if (!this.checkConstraints()) {
+            //revert
+            this.startPos.x -= this.size;
+        }
     }
 
     rotate() {
-        let matrix = this.blocks;
+        this.pivotArry(this.blocks);
+        if (!this.checkConstraints()) {
+            //revert
+            this.pivotArry(this.blocks);
+            this.pivotArry(this.blocks);
+            this.pivotArry(this.blocks);
+        }
+    }
+
+    pivotArry(matrix) {
         let n = matrix.length;
         let x = Math.floor(n / 2);
         let y = n - 1;
@@ -49,41 +66,160 @@ export default class Tetrimino {
         ctx.fillStyle = this.shape.color;
         let blockx = this.startPos.x;
         let blocky = this.startPos.y;
-        this.blocks.forEach(blockRow => {
-            blockRow.forEach(blockCell => {
+        for (let blockRow of this.blocks) {
+            for (let blockCell of blockRow) {
                 if (blockCell === 1) ctx.fillRect(blockx, blocky, this.width, this.height);
-                blockx += 20;
-            });
-            //this.blocks.push({pos={x:blockx,y:blocky}});
-            blocky += 20;
+                blockx += this.size;
+            };
+            blocky += this.size;
             blockx = this.startPos.x;
-        });
+        };
     }
 
     update(deltaTime) {
         //todo: move brick down based on speed
-        this.movePercent += this.speed/deltaTime;
-        let move =(this.movePercent>=this.size);
+        this.movePercent += this.game.speed / deltaTime;
+        let move = (this.movePercent >= this.size);
 
-        if (move){
+        if (move) {
             this.startPos.y += this.size;
 
-            this.movePercent=0;
-        }
+            this.movePercent = 0;
 
-        //for each block
-        //this.pos.y -= this.speed;
+            let blockx = this.startPos.x;
+            let blocky = this.startPos.y;
+            for (let blockRow of this.blocks) {
+                for (let blockCell of blockRow) {
+                    if (blockCell === 1) {
+                        //check for floor
+                        if (blocky >= this.gameHeight) {
+                            this.startPos.y -= this.size;
+                            this.collide();
+                            return;
+                        }
+
+                        //check for other blocks
+                        for (let stageBlock of this.game.stage.blocks) {
+                            if (detectCollision({ pos: { x: blockx, y: blocky } }, stageBlock)) {
+                                this.startPos.y -= this.size;
+                                this.collide();
+                                return;
+                            }
+                        }
+                    }
+
+                    blockx += this.size;
+                };
+                blocky += this.size;
+                blockx = this.startPos.x;
+            };
+
+        }
     }
 
+    collide() {
+        let blockx = this.startPos.x;
+        let blocky = this.startPos.y;
+        for (let blockRow of this.blocks) {
+            for (let blockCell of blockRow) {
+                if (blockCell === 1) {
+                    this.game.stage.blocks.push({ pos: { x: blockx, y: blocky }, color: this.shape.color });
+                }
+
+                blockx += this.size;
+            };
+            blocky += this.size;
+            blockx = this.startPos.x;
+        };
+
+        //generate new tetrimino
+        let tetrimino = new Tetrimino(this.game);
+        this.game.liveBlock = tetrimino;
+        this.game.gameObjects = [tetrimino, this.game.stage];
+    }
+
+    checkConstraints() {
+        let valid = true;
+        let xchange = this.checkWalls();
+        valid = this.checkBlocks();
+        //if wall bounce is not valid then revert
+        if (!valid) this.startPos.x += (xchange * -1);
+
+        return valid;
+    }
+
+    checkWalls() {
+        let blockx = this.startPos.x;
+        let blocky = this.startPos.y;
+
+        for (let blockRow of this.blocks) {
+            let cellNr = 1;
+            for (let blockCell of blockRow) {
+                if (blockCell === 1) {
+                    //right wall
+                    if (blockx + this.size > this.WallRightX) {
+                        this.startPos.x -= this.size;
+                        return -this.size;
+                    }
+                    //left wall
+                    if (blockx < this.wallLeftX) {
+                        this.startPos.x += this.size;
+                        return this.size;
+                    }
+                }
+                blockx += this.size;
+                cellNr++;
+            };
+
+            blockx = this.startPos.x;
+            blocky += this.size;
+        };
+    }
+
+    checkBlocks() {
+        var valid = true;
+
+        let blockx = this.startPos.x;
+        let blocky = this.startPos.y;
+
+
+        for (let blockRow of this.blocks) {
+            let cellNr = 1;
+            for (let blockCell of blockRow) {
+                if (blockCell === 1) {
+                    //check other blocks
+                    for (let stageBlock of this.game.stage.blocks) {
+                        if (detectCollision({ pos: { x: blockx, y: blocky } }, stageBlock)) {
+                            if (cellNr < (blockRow.length / 2)) {
+                                valid = false;
+                                break;
+                            }
+                            else if (cellNr >= (blockRow.length / 2)) {
+                                valid = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                blockx += this.size;
+                cellNr++;
+            };
+
+            blockx = this.startPos.x;
+            blocky += this.size;
+        };
+
+        return valid;
+    }
 
 }
 export class Ishape {
     constructor() {
         this.blocks = [
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [1, 1, 1, 1]
+            [0, 1, 0, 0],
+            [0, 1, 0, 0],
+            [0, 1, 0, 0],
+            [0, 1, 0, 0]
         ];
         this.color = "#00ffff";
     }
@@ -92,9 +228,9 @@ export class Jshape {
     constructor() {
         this.blocks = [
             [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [1, 0, 0, 0],
-            [1, 1, 1, 0]
+            [0, 1, 0, 0],
+            [0, 1, 1, 1],
+            [0, 0, 0, 0]
         ];
         this.color = "#0000ff";
     }
@@ -103,9 +239,9 @@ export class Lshape {
     constructor() {
         this.blocks = [
             [0, 0, 0, 0],
-            [0, 0, 0, 0],
             [0, 0, 1, 0],
-            [1, 1, 1, 0]
+            [1, 1, 1, 0],
+            [0, 0, 0, 0]
         ];
         this.color = "#ffaa00";
     }
@@ -114,9 +250,9 @@ export class Oshape {
     constructor() {
         this.blocks = [
             [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [1, 1, 0, 0],
-            [1, 1, 0, 0]
+            [0, 1, 1, 0],
+            [0, 1, 1, 0],
+            [0, 0, 0, 0]
         ];
         this.color = "#ffff00";
     }
@@ -125,9 +261,9 @@ export class Sshape {
     constructor() {
         this.blocks = [
             [0, 0, 0, 0],
-            [0, 0, 0, 0],
             [0, 1, 1, 0],
-            [1, 1, 0, 0]
+            [1, 1, 0, 0],
+            [0, 0, 0, 0]
         ];
         this.color = "#00ff00";
     }
@@ -136,9 +272,9 @@ export class Tshape {
     constructor() {
         this.blocks = [
             [0, 0, 0, 0],
-            [0, 0, 0, 0],
             [0, 1, 0, 0],
-            [1, 1, 1, 0]
+            [1, 1, 1, 0],
+            [0, 0, 0, 0]
         ];
         this.color = "#ff00ff";
     }
@@ -147,9 +283,9 @@ export class Zshape {
     constructor() {
         this.blocks = [
             [0, 0, 0, 0],
-            [0, 0, 0, 0],
             [1, 1, 0, 0],
-            [0, 1, 1, 0]
+            [0, 1, 1, 0],
+            [0, 0, 0, 0]
         ];
         this.color = "#ff0000";
     }
