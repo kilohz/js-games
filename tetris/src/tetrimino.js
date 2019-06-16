@@ -10,7 +10,7 @@ export default class Tetrimino {
         this.gameHeight = game.gameHeight;
         this.game = game;
         this.shapes = [new Ishape(), new Jshape(), new Lshape(), new Oshape(), new Sshape(), new Tshape(), new Zshape()];
-        this.startPos = { x: 400, y: 160 };
+        this.startPos = { x: 380, y: 160 };
         this.movePercent = 0;
         this.WallRightX = 500;
         this.wallLeftX = 300;
@@ -99,12 +99,10 @@ export default class Tetrimino {
                         }
 
                         //check for other blocks
-                        for (let stageBlock of this.game.stage.blocks) {
-                            if (detectCollision({ pos: { x: blockx, y: blocky } }, stageBlock)) {
-                                this.startPos.y -= this.size;
-                                this.collide();
-                                return;
-                            }
+                        if (this.game.stage.checkCollision(blockx, blocky)) {
+                            this.startPos.y -= this.size;
+                            this.collide();
+                            return;
                         }
                     }
 
@@ -123,7 +121,7 @@ export default class Tetrimino {
         for (let blockRow of this.blocks) {
             for (let blockCell of blockRow) {
                 if (blockCell === 1) {
-                    this.game.stage.blocks.push({ pos: { x: blockx, y: blocky }, color: this.shape.color });
+                    this.game.stage.add(blockx,blocky, this.shape.color);
                 }
 
                 blockx += this.size;
@@ -140,64 +138,50 @@ export default class Tetrimino {
 
     checkConstraints() {
         let valid = true;
-        let xchange = this.checkWalls();
-        valid = this.checkBlocks();
+        let xchange = this.checkNudge(0);
+        // add double check, Ishape rotate against right wall goes over by 2
+        xchange = this.checkNudge(xchange);
+        valid = this.checkValid(xchange);
         //if wall bounce is not valid then revert
-        if (!valid) this.startPos.x += (xchange * -1);
+        if (valid) {
+            this.startPos.x += xchange;
+        }
 
         return valid;
     }
 
-    checkWalls() {
-        let blockx = this.startPos.x;
+    checkNudge(xchange) {
+        let startx = this.startPos.x + xchange;
+        let blockx = startx;
         let blocky = this.startPos.y;
 
         for (let blockRow of this.blocks) {
             let cellNr = 1;
             for (let blockCell of blockRow) {
                 if (blockCell === 1) {
-                    //right wall
-                    if (blockx + this.size > this.WallRightX) {
-                        this.startPos.x -= this.size;
-                        return -this.size;
-                    }
                     //left wall
                     if (blockx < this.wallLeftX) {
-                        this.startPos.x += this.size;
-                        return this.size;
+                        xchange += this.size;
+                        blockx += this.size;
+                        return xchange;
                     }
-                }
-                blockx += this.size;
-                cellNr++;
-            };
-
-            blockx = this.startPos.x;
-            blocky += this.size;
-        };
-    }
-
-    checkBlocks() {
-        var valid = true;
-
-        let blockx = this.startPos.x;
-        let blocky = this.startPos.y;
-
-
-        for (let blockRow of this.blocks) {
-            let cellNr = 1;
-            for (let blockCell of blockRow) {
-                if (blockCell === 1) {
-                    //check other blocks
-                    for (let stageBlock of this.game.stage.blocks) {
-                        if (detectCollision({ pos: { x: blockx, y: blocky } }, stageBlock)) {
-                            if (cellNr < (blockRow.length / 2)) {
-                                valid = false;
-                                break;
-                            }
-                            else if (cellNr >= (blockRow.length / 2)) {
-                                valid = false;
-                                break;
-                            }
+                    //right wall
+                    if (blockx + this.size > this.WallRightX) {
+                        xchange -= this.size;
+                        blockx -= this.size;
+                        return xchange;
+                    }
+                    //check blocks
+                    if (this.game.stage.checkCollision(blockx, blocky)) {
+                        if (cellNr < (blockRow.length / 2)) {
+                            xchange += this.size;
+                            blockx += this.size;
+                            return xchange;
+                        }
+                        else if (cellNr >= (blockRow.length / 2)) {
+                            xchange -= this.size;
+                            blockx -= this.size;
+                            return xchange;
                         }
                     }
                 }
@@ -205,7 +189,51 @@ export default class Tetrimino {
                 cellNr++;
             };
 
-            blockx = this.startPos.x;
+            blockx = startx;
+            blocky += this.size;
+        };
+
+        return xchange;
+    }
+
+    checkValid(xchange) {
+        var valid = true;
+        let startx = this.startPos.x + xchange;
+        let blockx = startx;
+        let blocky = this.startPos.y;
+
+
+        for (let blockRow of this.blocks) {
+            let cellNr = 1;
+            for (let blockCell of blockRow) {
+                if (blockCell === 1) {
+                    //left wall
+                    if (blockx < this.wallLeftX) {
+                        valid = false;
+                        break;
+                    }
+                    //right wall
+                    if (blockx + this.size > this.WallRightX) {
+                        valid = false;
+                        break;
+                    }
+                    //check other blocks
+                    if (this.game.stage.checkCollision(blockx, blocky)) {
+                        if (cellNr < (blockRow.length / 2)) {
+                            valid = false;
+                            break;
+                        }
+                        else if (cellNr >= (blockRow.length / 2)) {
+                            valid = false;
+                            break;
+                        }
+                    }
+                }
+                blockx += this.size;
+                cellNr++;
+            };
+
+            blockx = startx;
             blocky += this.size;
         };
 
@@ -216,10 +244,10 @@ export default class Tetrimino {
 export class Ishape {
     constructor() {
         this.blocks = [
-            [0, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 1, 0, 0]
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [1, 1, 1, 1],
+            [0, 0, 0, 0]
         ];
         this.color = "#00ffff";
     }

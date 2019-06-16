@@ -1,3 +1,5 @@
+import {GAMESTATE} from './game.js';
+
 export default class InputHandler {
 
     constructor(game) {
@@ -33,7 +35,7 @@ export default class InputHandler {
                         this.isdown = true;
                     }
                     //while keydown score is incremented
-                    game.score++;
+                    if(game.gamestate == GAMESTATE.RUNNING)game.score++;
                     break;
                 case 27:
                     game.togglePause();

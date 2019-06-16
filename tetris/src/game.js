@@ -2,7 +2,7 @@ import Tetrimino from './tetrimino.js';
 import InputHandler from './input.js';
 import Stage from './stage.js';
 
-const GAMESTATE = {
+export const GAMESTATE = {
     PAUSED: 0,
     RUNNING: 1,
     MENU: 2,
@@ -19,7 +19,7 @@ export default class Game {
         this.gamestate = GAMESTATE.MENU;
         this.lives = 1;
         this.score = 0;
-        this.speed = 10;
+        this.speed = 5;
 
         new InputHandler(this);
     }
@@ -36,10 +36,6 @@ export default class Game {
     }
 
     draw(ctx) {
-        //draw grid
-        ctx.drawImage(document.getElementById('img_grid'), 0, 0, this.gameWidth, this.gameHeight);
-
-        this.gameObjects.forEach(object => object.draw(ctx));
 
         if (this.gamestate === GAMESTATE.PAUSED) {
             ctx.rect(0, 0, this.gameWidth, this.gameHeight);
@@ -70,7 +66,16 @@ export default class Game {
             ctx.fillStyle = "white";
             ctx.textAlign = "center";
             ctx.fillText("GAME OVER", this.gameWidth / 2, this.gameHeight / 2);
-            ctx.fillText("Score: "+this.score, this.gameWidth / 2, this.gameHeight / 2 + 50);
+            ctx.fillText("Score: " + this.score, this.gameWidth / 2, this.gameHeight / 2 + 50);
+        }
+        if (this.gamestate === GAMESTATE.RUNNING) {
+            //draw grid
+            ctx.drawImage(document.getElementById('img_grid'), 0, 0, this.gameWidth, this.gameHeight);
+
+            this.gameObjects.forEach(object => object.draw(ctx));
+            
+            ctx.fillStyle = "black";
+            ctx.fillText(this.score, 50, 50);
         }
     }
 
@@ -79,7 +84,7 @@ export default class Game {
 
         let tetrimino = new Tetrimino(this);
         let stage = new Stage(this);
-        this.gameObjects = [tetrimino,stage];
+        this.gameObjects = [tetrimino, stage];
         this.liveBlock = tetrimino;
         this.stage = stage;
 
