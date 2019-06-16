@@ -8,6 +8,7 @@ export default class Stage {
         this.game = game;
         this.height = 400;
         this.speed = 1;
+        this.image = document.getElementById('img_brick');
         this.blocks =
             [
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -63,7 +64,15 @@ export default class Stage {
                 let col = row[c];
                 if (col != 0) {
                     ctx.fillStyle = col;
-                    ctx.fillRect(300 + (c * 20), 200 + (r * 20), this.blockSize, this.blockSize);
+                    let x = 300 + (c * 20);
+                    let y = 200 + (r * 20);
+                    ctx.fillRect(x,y , this.blockSize, this.blockSize);
+                    
+                    ctx.drawImage(this.image,
+                        x,
+                        y, 
+                        this.blockSize, 
+                        this.blockSize);
                 }
             }
         }

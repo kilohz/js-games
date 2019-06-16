@@ -14,6 +14,7 @@ export default class Tetrimino {
         this.movePercent = 0;
         this.WallRightX = 500;
         this.wallLeftX = 300;
+        this.image = document.getElementById('img_brick');
 
         //randomize 
         let randomIndex = Math.floor(Math.random() * this.shapes.length);
@@ -68,7 +69,14 @@ export default class Tetrimino {
         let blocky = this.startPos.y;
         for (let blockRow of this.blocks) {
             for (let blockCell of blockRow) {
-                if (blockCell === 1) ctx.fillRect(blockx, blocky, this.width, this.height);
+                if (blockCell === 1){ 
+                    ctx.fillRect(blockx, blocky, this.width, this.height);
+                    ctx.drawImage(this.image,
+                        blockx,
+                        blocky, 
+                        this.width, 
+                        this.height);
+                }
                 blockx += this.size;
             };
             blocky += this.size;
