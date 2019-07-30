@@ -3,8 +3,8 @@ import Game from "./game.js";
 let canvas = document.getElementById("gameScreen");
 let ctx = canvas.getContext('2d');
 
-const GAME_WIDTH = 800;
-const GAME_HEIGHT = 600;
+const GAME_WIDTH = 500;
+const GAME_HEIGHT = 500;
 let game = new Game(GAME_WIDTH, GAME_HEIGHT);
 
 var frameRate = 1000 / 60;

@@ -5,7 +5,7 @@ export default class Snake {
     constructor(game) {
         this.image = document.getElementById('img_ball');
         this.size = 20;
-        this.startSpeed = 15;
+        this.startSpeed = 10;
         this.speed = this.startSpeed;
 
         this.width = this.size;
@@ -114,12 +114,12 @@ export default class Snake {
 
     update(deltaTime) {
         //800x600 /20 = 40x30 grid
-        this.movePercent = { x: this.movePercent.x + this.vel.x / deltaTime, y: this.movePercent.y + this.vel.y / deltaTime }
+        this.movePercent = { x: this.movePercent.x + this.vel.x * (deltaTime/60), y: this.movePercent.y + this.vel.y * (deltaTime/60) }
         let move = (this.movePercent.x >= this.size || this.movePercent.y >= this.size)
             || (this.movePercent.x <= this.size * -1 || this.movePercent.y <= this.size * -1);
 
         if (move) {
-            this.move();
+            this.move(false);
         }
 
         //check if collides with body
