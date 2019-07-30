@@ -70,9 +70,6 @@ export default class Tetrimino {
 
             this.movePercent=0;
         }
-
-        //for each block
-        //this.pos.y -= this.speed;
     }
 
 
