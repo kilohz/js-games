@@ -87,7 +87,7 @@ export default class Game {
         this.gameObjects = [this.player, this.email, this.hr];
 
         //add cultist
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 10; i++) {
             let cultist = new Cultist(this);
             this.cultists.push(cultist);
             this.gameObjects.push(cultist);
