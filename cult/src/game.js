@@ -1,6 +1,7 @@
 import Player from './player.js';
 import Cultist from './cultist.js';
 import Hr from './hr.js';
+import Email from './email.js';
 import InputHandler from './input.js';
 
 const GAMESTATE = {
@@ -23,6 +24,8 @@ export default class Game {
         this.lives = 3;
         this.score = 0;
         this.hr = new Hr(this);
+        this.email = new Email(this);
+        this.hasWon = false;
 
         new InputHandler(this);
     }
@@ -34,6 +37,10 @@ export default class Game {
             || this.gamestate === GAMESTATE.MENU
             || this.gamestate === GAMESTATE.GAMEOVER) return;
 
+        //check if all cultists are converted then mark game as you win
+        let allConverted = true;
+        this.cultists.forEach(c => allConverted &= c.converted);
+        if (allConverted) this.win();
 
         this.gameObjects.forEach(object => object.update(deltaTime));
     }
@@ -65,27 +72,26 @@ export default class Game {
             ctx.font = "30px Arial";
             ctx.fillStyle = "white";
             ctx.textAlign = "center";
-            ctx.fillText("GAME OVER", this.gameWidth / 2, this.gameHeight / 2);
-            ctx.fillText("Score: "+this.score, this.gameWidth / 2, this.gameHeight / 2 + 50);
+            if (this.hasWon) {
+                ctx.fillText("YOU WIN", this.gameWidth / 2, this.gameHeight / 2);
+            } else {
+                ctx.fillText("GAME OVER", this.gameWidth / 2, this.gameHeight / 2);
+            }
+            ctx.fillText("Score: " + this.score, this.gameWidth / 2, this.gameHeight / 2 + 50);
         }
     }
 
     start() {
         if (this.gamestate != GAMESTATE.MENU && this.gamestate != GAMESTATE.NEWLEVEL) return;
 
+        this.gameObjects = [this.player, this.email, this.hr];
+
         //add cultist
-        let cultist1 = new Cultist(this);
-        let cultist2 = new Cultist(this);
-        let cultist3 = new Cultist(this);
-        let cultist4 = new Cultist(this);
-        let cultist5 = new Cultist(this);
-        let cultist6 = new Cultist(this);
-        let cultist7 = new Cultist(this);
-        let cultist8 = new Cultist(this);
-
-        this.gameObjects = [this.player,cultist1,cultist2,cultist3,cultist4,cultist5,cultist6,cultist7,cultist8,this.hr];
-        this.cultists = [cultist1,cultist2,cultist3,cultist4,cultist5,cultist6,cultist7,cultist8];
-
+        for (let i = 0; i < 8; i++) {
+            let cultist = new Cultist(this);
+            this.cultists.push(cultist);
+            this.gameObjects.push(cultist);
+        }
 
         this.gamestate = GAMESTATE.RUNNING;
     }
@@ -99,8 +105,19 @@ export default class Game {
         }
     }
 
-    end()
-    {
+    end() {
+        var audio = new Audio('/assets/sound/die.mp3');
+        audio.play();
+
+        this.gamestate = GAMESTATE.GAMEOVER;
+    }
+
+
+    win() {
+        this.hasWon = true;
+        var audio = new Audio('/assets/sound/win.mp3');
+        audio.play();
+
         this.gamestate = GAMESTATE.GAMEOVER;
     }
 }

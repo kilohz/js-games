@@ -27,36 +27,56 @@ export default class Hr {
     }
 
     draw(ctx) {
-            ctx.drawImage(document.getElementById('img_hr'), this.pos.x, this.pos.y, this.width, this.height);
+        ctx.drawImage(document.getElementById('img_hr'), this.pos.x, this.pos.y, this.width, this.height);
     }
 
     update(deltaTime) {
-        
+
     }
 
-    move(){
+    move() {
         //random movement
         if (!this.converted) {
             let shouldMove = (Math.floor(Math.random() * 100) + 1) > 50;
             if (shouldMove) {
                 //move towards player
-                if(this.game.player.pos.x > this.pos.x){
+                if (this.game.player.pos.x > this.pos.x) {
                     this.pos.x += 20;
                 }
-                else if(this.game.player.pos.x < this.pos.x){
+                else if (this.game.player.pos.x < this.pos.x) {
                     this.pos.x -= 20;
                 }
 
-                if(this.game.player.pos.y > this.pos.y){
+                if (this.game.player.pos.y > this.pos.y) {
                     this.pos.y += 20;
                 }
-                else if(this.game.player.pos.y < this.pos.y){
+                else if (this.game.player.pos.y < this.pos.y) {
                     this.pos.y -= 20;
                 }
             }
 
+            //check if player is lined up to shoot email at him
+            if (this.game.player.pos.x == this.pos.x && !this.game.email.sending) {
+                if (this.game.player.pos.y < this.pos.y) {
+                    this.game.email.vel = { x: 0, y: -20 };
+                } else if (this.game.player.pos.y > this.pos.y) {
+                    this.game.email.vel = { x: 0, y: 20 };
+                }
+                this.game.email.pos = {x:this.pos.x,y:this.pos.y};
+                this.game.email.sending = true;
+            }
+            if (this.game.player.pos.y == this.pos.y && !this.game.email.sending) {
+                if (this.game.player.pos.x < this.pos.x) {
+                    this.game.email.vel = { x: -20, y: 0 };
+                } else if (this.game.player.pos.x > this.pos.x) {
+                    this.game.email.vel = { x: 20, y: 0 };
+                }
+                this.game.email.pos = {x:this.pos.x,y:this.pos.y};
+                this.game.email.sending = true;
+            }
+
             if (detectCollision(this, this.game.player)) {
-                //TODO: if touch HR then game over
+                //if touch HR then game over
                 this.game.end();
             }
         }

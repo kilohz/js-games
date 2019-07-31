@@ -81,6 +81,9 @@ export default class Cultist {
 
             if (detectCollision(this, this.game.player)) {
                 this.converted = true;
+                var audio = new Audio('/assets/sound/wololo.mp3');
+                audio.play();
+
                 this.game.score += 10;
             }
         }
