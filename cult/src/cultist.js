@@ -37,55 +37,58 @@ export default class Cultist {
     }
 
     update(deltaTime) {
-        
+
     }
 
-    move(){
+    move() {
+        this.checkCollision();
         //random movement
-        if (!this.converted) {
-            let shouldMove = (Math.floor(Math.random() * 100) + 1) > 50;
-            if (shouldMove) {
-                let x = Math.floor(Math.random() * 30) + 1;
-                let y = Math.floor(Math.random() * 30) + 1;
-                if (x > 20) {
-                    this.pos.x += 20;
-                }
-                //if 10 - 20 do nothing
-                else if (x < 10) {
-                    this.pos.x -= 20;
-                }
+        let shouldMove = (Math.floor(Math.random() * 100) + 1) > 50;
+        if (shouldMove) {
 
-                if (y > 20) {
-                    this.pos.y += 20;
-                }
-                //if 10 - 20 do nothing
-                else if (y < 10) {
-                    this.pos.y -= 20;
-                }
-
-                //edges
-                if (this.pos.x + this.size > this.gameWidth) {
-                    this.pos.x = 0;
-                }
-                if (this.pos.x < 0) {
-                    this.pos.x = this.gameWidth - this.size;
-                }
-                //check if it hits a wall on top/bottom
-                if (this.pos.y < 0) {
-                    this.pos.y = this.gameHeight - this.size;
-                }
-                if (this.pos.y + this.size > this.gameHeight) {
-                    this.pos.y = 0;
-                }
+            let x = Math.floor(Math.random() * 30) + 1;
+            let y = Math.floor(Math.random() * 30) + 1;
+            if (x > 20) {
+                this.pos.x += 20;
+            }
+            //if 10 - 20 do nothing
+            else if (x < 10) {
+                this.pos.x -= 20;
             }
 
-            if (detectCollision(this, this.game.player)) {
-                this.converted = true;
-                var audio = new Audio('/assets/sound/wololo.mp3');
-                audio.play();
-
-                this.game.score += 10;
+            if (y > 20) {
+                this.pos.y += 20;
             }
+            //if 10 - 20 do nothing
+            else if (y < 10) {
+                this.pos.y -= 20;
+            }
+
+            //edges
+            if (this.pos.x + this.size > this.gameWidth) {
+                this.pos.x = 0;
+            }
+            if (this.pos.x < 0) {
+                this.pos.x = this.gameWidth - this.size;
+            }
+            //check if it hits a wall on top/bottom
+            if (this.pos.y < 0) {
+                this.pos.y = this.gameHeight - this.size;
+            }
+            if (this.pos.y + this.size > this.gameHeight) {
+                this.pos.y = 0;
+            }
+            this.checkCollision();
+        }
+    }
+
+    checkCollision() {
+        if (detectCollision(this, this.game.player)) {
+            this.converted = true;
+            var audio = new Audio('assets/sound/wololo.mp3');
+            audio.play();
+
+            this.game.score += 10;
         }
     }
 
